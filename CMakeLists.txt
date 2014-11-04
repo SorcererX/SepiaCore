@@ -1,0 +1,12 @@
+project(CuttleFish)
+cmake_minimum_required(VERSION 3.0)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -march=native -O3")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O0")
+
+add_subdirectory(SensorInterface)
+add_subdirectory(SensorController)
+add_subdirectory(Test)
+add_subdirectory(SensorRectifier)
+add_subdirectory(SensorViewer)
+#    add_subdirectory(Tools)
+add_subdirectory(SensorRecorder)

@@ -1,0 +1,82 @@
+package cuttlefish_msgs;
+//option optimize_for = LITE_RUNTIME;
+
+message Timestamp {
+   required int64 tv_sec = 1;
+   required int64 tv_usec = 2;
+}
+
+message XimeaControl {
+    required uint32 camera_no = 1;
+    enum CommandType {
+        OPEN = 0;
+        CLOSE = 1;
+        START = 2;
+        STOP = 3;
+        TERMINATE = 4;
+        TRIGGER_START = 5;
+        TRIGGER_STOP = 6;
+    }
+    optional CommandType command = 2;
+}
+
+message XimeaSet {
+   required uint32 camera_no = 1;
+   required string parameter = 2;
+   optional uint32 int_value = 3;
+   optional float float_value = 4;
+}
+
+message XimeaGet {
+   required uint32 camera_no = 1;
+
+   required string parameter = 2;
+   enum Type {
+      INT = 0;
+      FLOAT = 1;
+   }
+   required Type type = 3;
+}
+
+message XimeaReply {
+   required XimeaGet request = 1;
+   optional uint32 int_value = 3;
+   optional float float_value = 4;
+}
+
+message V4L2Control {
+    required uint32 camera_no = 1;
+    enum CommandType {
+        OPEN = 0;
+        CLOSE = 1;
+        START = 2;
+        STOP = 3;
+        TERMINATE = 4;
+    }
+    optional CommandType command = 2;
+}
+
+message Image {
+    required int32 camera_no = 1;
+    required int64 frame_number = 2;
+    optional int64 timestamp_usec = 3;
+    optional int64 timestamp_sec = 4;
+    optional string format = 5;
+    optional int32 fourcc = 6;
+    optional int32 width = 7;
+    optional int32 height = 8;
+    optional int32 bpp = 9;
+    required bytes data = 10;
+}
+
+message Interface {
+   required string name = 1;
+   required string output = 2;
+   repeated int32 camera_ids = 3;
+}
+
+message InterfaceControl {
+   required Interface interface = 1;
+   required bool synchronize = 2;
+}
+

@@ -1,0 +1,209 @@
+#include <sepia/reader.h>
+#include <sepia/writer.h>
+#include <sepia/compression/compress.h>
+#include <vector>
+#include <deque>
+#include <iostream>
+#include <cstring>
+#include <cmath>
+#include <bitset>
+#include <chrono>
+
+void reconstruct_image( unsigned char* a_destination, unsigned char* a_source, size_t a_size, size_t a_pixelOffset )
+{
+    const size_t step_size = sizeof( u_int64_t ) * 8 / 3;
+    size_t read_bytes = 0;
+    for( int i = 0; i < a_size; i+= sizeof( u_int64_t ) ) // decode entire 64-bit integers.
+    {
+        u_int64_t* temp = reinterpret_cast< u_int64_t* >( a_source+i );
+        char diff[ step_size ];
+//        std::cout << "chunk_dst: " << std::bitset<64>( *temp ) << " " << i << std::endl;
+        //std::cout << std::dec << std::endl;
+        for( int j = 0; j < step_size; j++ )
+        {
+            bool special = false;
+            char value = ( *temp >> (j*3) ) & 0x7LL;
+            switch( value )
+            {
+            case 5: // 101
+                value = -3;
+                break;
+            case 6: // 110
+                value = -2;
+                break;
+            case 7: // 111
+                value = -1;
+                break;
+            case 0: // 000
+                value = 0;
+                break;
+            case 1: // 001
+                value = 1;
+                break;
+            case 2: // 010
+                value = 2;
+                break;
+            case 3: // 011
+                value = 3;
+                break;
+            case 4: // 100
+                special = true;
+                value = *(a_source+a_pixelOffset+read_bytes);
+                read_bytes++;
+                break;
+            default:
+                std::cerr << "Decode error: " << (int) value << " is not a valid 3-bit code." << std::endl;
+                break;
+            }
+            //std::cout << "index: " << i*step_size+j << std::endl;
+            size_t dest_index = i / sizeof( u_int64_t );
+
+            unsigned char orig_value = *(a_destination+dest_index*step_size+j);
+
+            *(a_destination+dest_index*step_size+j) = ( *(a_destination+dest_index*step_size+j) + value ) % 256;
+        }
+    }
+}
+
+
+inline void set_bits( u_int64_t* a_destination, const char* a_input, size_t a_steps )
+{
+    std::bitset<64> array;
+
+    for( size_t i = 0; i < a_steps; i++ )
+    {
+        switch( *(a_input + i) )
+        {
+        case -3: // -3, encoded as 101
+            array.set( 3*i+2, true );
+            array.set( 3*i, true );
+            break;
+        case -2: // -2, encoded as  110
+            array.set( 3*i+2, true );
+            array.set( 3*i+1, true );
+            break;
+        case -1: // -1, encoded as 111
+            array.set( 3*i+2, true );
+            array.set( 3*i+1, true );
+            array.set( 3*i,   true );
+            break;
+        case 0: // 0, encoded as 000
+            break;
+        case 1: // 1, encoded as 001
+            array.set( 3*i,   true );
+            break;
+        case 2: // 2, encoded as 010
+            array.set( 3*i+1, true );
+            break;
+        case 3: // 3, encoded as 011
+            array.set( 3*i+1, true );
+            array.set( 3*i,   true );
+            break;
+        default: // all others, encoded as 100
+            array.set( 3*i+2, true );
+            break;
+        }
+        //std::cout << (int) *(a_input + i) << " ";
+    }
+    *a_destination = array.to_ullong();
+    // last bit (index: 63 is unused (avoids having to read/write bits across word boundaries)
+}
+
+
+
+
+int main()
+{
+    sepia::Reader reader( "XI_IMG" );
+    sepia::compression::Compress comp( sepia::compression::Common::Method::ZLIB, 2 );
+    reader.update();
+
+    sepia::Writer writer( "COMPRESSED", reader.getGroupHeader()->count,
+                          reader.getHeader( 0 )->width,
+                          reader.getHeader( 0 )->height,
+                          reader.getHeader( 0 )->bpp  );
+    writer.update();
+
+    const size_t total_pixels = reader.getHeader( 0 )->width * reader.getHeader( 0 )->height;
+
+    std::vector< unsigned char > last;
+    last.reserve( total_pixels );
+    last.resize( total_pixels );
+
+    std::vector< unsigned char > temp;
+    temp.reserve( total_pixels );
+    temp.resize( total_pixels );
+
+    std::vector< unsigned char > decoded;
+    decoded.reserve( total_pixels );
+    decoded.resize( total_pixels );
+
+    const size_t read_size = reader.getSize( 0 );
+
+    std::cout << "Reader size: " << read_size << " last: " << last.size() << std::endl;
+
+    const size_t step_size = sizeof( u_int64_t ) * 8 / 3;
+    const size_t pixel_offset = ( total_pixels * sizeof( u_int64_t ) / step_size + 1 * sizeof( u_int64_t )  ) ;
+
+    std::cout << "Starting 8-bit pixel portion write at: " << pixel_offset << std::endl;
+
+    bool first = true;
+    while( true )
+    {
+        memcpy( last.data(), reader.getAddress( 0 ), read_size );
+        reader.update();
+        char* addr = reader.getAddress( 0 );
+
+        auto begin = std::chrono::steady_clock::now();
+
+        size_t written_pixels = 0;
+        for( size_t i = 0; i < read_size; i+= step_size )
+        {
+            char diff[step_size];
+
+            for( size_t j = 0; ( i + j ) < read_size && j < step_size; j++ )
+            {
+                short value = static_cast<unsigned char>( *(addr+i+j) ) - last.at( i+j );
+
+                if( value > 127 )
+                {
+                    value -= 255;
+                }
+                else if( value < -127 )
+                {
+                    value += 255;
+                }
+
+                diff[j] = static_cast< char >( value );
+
+                if( abs( value ) > 3 )
+                {
+                    temp.at( pixel_offset + written_pixels ) = value;
+                    written_pixels++;
+                }
+            }
+            u_int64_t* test = reinterpret_cast< u_int64_t* >( &temp.at( i*sizeof( u_int64_t) /step_size ) );
+            set_bits( test, &diff[0], std::min( step_size, read_size - i ) );
+        }
+
+        size_t frame_size = written_pixels + total_pixels * sizeof( u_int64_t ) / step_size + sizeof( u_int64_t );
+
+        std::cout << "3-bit pixels : " << total_pixels-written_pixels
+                  << " ( " << ( total_pixels - written_pixels ) * 100.0 / total_pixels << "% )"
+                  << "- compressed size: " << frame_size
+                  << " ( " << frame_size*100.0/total_pixels << "% )" << std::endl;
+
+        /*
+        reconstruct_image( last.data(),
+                           temp.data(),
+                           total_pixels * sizeof( u_int64_t ) / 21,
+                           pixel_offset,
+                           reinterpret_cast< unsigned char* >( reader.getAddress(0) ) );
+                           */
+        writer.update();
+        first = false;
+        auto end = std::chrono::steady_clock::now();
+        auto elapsed = end-begin;
+        std::cerr << "Processing time: " << elapsed.count() * 1000.0 / std::chrono::steady_clock::period().den << " ms" << std::endl;
+    }
+}
