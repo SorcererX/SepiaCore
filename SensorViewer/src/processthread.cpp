@@ -9,40 +9,40 @@
 
 namespace
 {
-void adjustWb( IplImage* input, double Kr, double Kg, double Kb )
+void adjustWb( cv::Mat* input, double Kr, double Kg, double Kb )
 {
-    unsigned char* image = (unsigned char*) input->imageData;
+    unsigned char* image = (unsigned char*) input->data;
     int p = 0;
-    for( int y = 0; y < input->height; y++ )
+    for( int y = 0; y < input->rows; y++ )
     {
         if( ( y & 1 ) == 0)
         {
-            for( int x = 0; x < input->width; x++ )
+            for( int x = 0; x < input->cols; x++ )
             {
                 if( ( x & 1 ) == 0 )
                 {
-                    p = image[y * input->width + x ] * Kr;
+                    p = image[y * input->cols + x ] * Kr;
                 }
                 else
                 {
-                    p = image[y * input->width + x ] * Kg;
+                    p = image[y * input->cols + x ] * Kg;
                 }
-                image[y * input->width + x ]= std::min( p, 255 );
+                image[y * input->cols + x ]= std::min( p, 255 );
             }
         }
         else
         {
-            for( int x = 0; x < input->width; x++ )
+            for( int x = 0; x < input->cols; x++ )
             {
                 if( ( x & 1 )  == 1 )
                 {
-                    p = image[y * input->width + x ] * Kb;
+                    p = image[y * input->cols + x ] * Kb;
                 }
                 else
                 {
-                    p = image[y * input->width + x ] * Kg;
+                    p = image[y * input->cols + x ] * Kg;
                 }
-                image[y * input->width + x ]= std::min( p, 255 );
+                image[y * input->cols + x ]= std::min( p, 255 );
             }
 
         }
