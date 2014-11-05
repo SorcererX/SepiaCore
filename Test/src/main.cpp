@@ -6,7 +6,6 @@
 int main()
 {
     sepia::Reader reader( "XI_IMG" );
-    sepia::compression::Compress comp( sepia::compression::Common::Method::ZLIB, 2 );
     reader.update();
 
     sepia::Writer writer( "COMPRESSED", reader.getGroupHeader()->count,
