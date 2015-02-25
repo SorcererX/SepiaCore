@@ -198,7 +198,7 @@ int main(int argc, char** argv)
           window_count = 2;
       }
 
-      scale = window_width/(float) (1280*window_count);
+      scale = window_width/(float) ( width * window_count);
 
       if( Settings::force_noscale )
       {
@@ -218,7 +218,7 @@ int main(int argc, char** argv)
 
       if( window_height != scale*height )
       {
-        window_height = scale*1024;
+        window_height = scale*height;
         glfwSetWindowSize( window, window_width, window_height );
       }
 
@@ -253,7 +253,7 @@ int main(int argc, char** argv)
       if( Settings::show_mode == Settings::show::BOTH
        || Settings::show_mode == Settings::show::RIGHT )
       {
-          glDrawPixels( 1280, 1024, color_mode, GL_UNSIGNED_BYTE, processed.getAddress( 1 ) );
+          glDrawPixels( width, height, color_mode, GL_UNSIGNED_BYTE, processed.getAddress( 1 ) );
       }
 
       if( Settings::show_mode == Settings::show::STEREO )
