@@ -4,6 +4,11 @@
 
 V4L2Capture::V4L2Capture( const int cameras )
 {
+    std::string name = "/dev/video";
+    for( int i = 0; i < cameras; i++ )
+    {
+        addCamera( name + std::to_string( i ) );
+    }
 }
 
 V4L2Capture::~V4L2Capture()
