@@ -68,6 +68,11 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
+static void focus_callback( GLFWwindow* window, int focused )
+{
+
+}
+
 // this simply combines the left and right image into an anaglyphic stereo image.
 // supports B&W and RGB images.
 void anaglyphic_stereo(cv::Mat left_input, cv::Mat right_input, cv::Mat output)
@@ -175,6 +180,7 @@ int main(int argc, char** argv)
   glClearColor(0.0, 0.0, 0.0, 1.0);
 
   glfwSetKeyCallback( window, key_callback );
+  glfwSetWindowFocusCallback( window, focus_callback );
 
   float scale = 1.0;
 
