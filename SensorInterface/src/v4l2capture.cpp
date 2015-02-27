@@ -16,6 +16,11 @@ void V4L2Capture::addCamera( const std::string& a_fileName )
     m_acquisition.push_back( false );
 }
 
+bool V4L2Capture::isTerminated()
+{
+    return m_terminate;
+}
+
 void V4L2Capture::start()
 {
     for( unsigned int i = 0; i < m_cameras.size(); i++ )
