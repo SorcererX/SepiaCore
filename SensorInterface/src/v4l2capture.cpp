@@ -1,13 +1,28 @@
 #include "v4l2capture.h"
 #include "v4l2camera.h"
-
+#include <sepia/writer.h>
 
 V4L2Capture::V4L2Capture( const int cameras )
 {
+    m_writer = new sepia::Writer( "/V4L2_IMAGE", cameras, 1280, 1024, 32 ); // reserve for 4 channels.
+    m_barrier = new boost::barrier( cameras );
+
     std::string name = "/dev/video";
     for( int i = 0; i < cameras; i++ )
     {
         addCamera( name + std::to_string( i ) );
+    }
+    // FIXME: this is only suitable for Logitech C920
+    int format = 1; // MJPEG
+    int frame_width = 1600;
+    int frame_height = 1200;
+    for( int i = 0; i < cameras; i++ )
+    {
+        V4L2Camera* camera = m_cameras.at( i );
+        camera->stopCapture();
+        camera->setFormat( camera->getFormats().at( format ).pixelformat, frame_width, frame_height );
+        camera->setPowerLineFrequencyTo50HZ();
+        camera->setAutoExposure(); // for several synchronized cameras, this should be manual.
     }
 }
 
@@ -18,7 +33,7 @@ V4L2Capture::~V4L2Capture()
 void V4L2Capture::addCamera( const std::string& a_fileName )
 {
     m_cameras.push_back( new V4L2Camera( a_fileName ) );
-    m_acquisition.push_back( false );
+    m_acquisition.push_back( true ); // FIXME: set to false once V4L2Control is implemented.
 }
 
 bool V4L2Capture::isTerminated()
@@ -71,6 +86,52 @@ void V4L2Capture::receive( const cuttlefish_msgs::V4L2Control* msg )
 void V4L2Capture::acquisition_thread( const int camera_id )
 {
    V4L2Camera* input = m_cameras.at( camera_id );
+
+   input->stopCapture();
+   unsigned int frame_no = 0;
+
+   input->init_mmap();
+   input->readyCapture();
+   m_barrier->wait();
+   input->startCapture();
+
+   bool ok = true;
+
+   while( !m_terminate )
+   {
+       if( m_acquisition.at( camera_id ) )
+       {
+           sepia::Stream::image_header_t* hdr = m_writer->getHeader( camera_id );
+           frame_no++;
+           m_barrier->wait();
+           ok = input->readyFrame();
+           char* address = m_writer->getAddress( camera_id );
+           struct timeval tv;
+           input->readFrame( (unsigned char*) address, hdr->size, tv );
+           hdr->fourcc = input->getCurrentFormat().fmt.pix.pixelformat;
+           hdr->width = input->getCurrentFormat().fmt.pix.width;
+           hdr->height = input->getCurrentFormat().fmt.pix.height;
+           hdr->tv_sec = tv.tv_sec;
+           hdr->tv_usec = tv.tv_usec;
+
+           if( !ok )
+           {
+               std::cerr << "readyFrame failed." << std::endl;
+               break;
+           }
+
+           if( camera_id == 0 )
+           {
+               m_writer->update();
+           }
+       }
+       else
+       {
+           frame_no = 0;
+           m_barrier->wait();
+           usleep( 500000 ); // wait 500 ms before retrying.
+       }
+   }
    /*
    input->stopCapture();
    sleep( 2 );

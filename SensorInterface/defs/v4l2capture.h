@@ -7,7 +7,9 @@
 #include <sensorinterface.h>
 #include <boost/thread/mutex.hpp>
 
-class ImageWriter;
+namespace sepia {
+    class Writer;
+}
 class V4L2Camera;
 
 namespace boost {
@@ -38,7 +40,7 @@ class V4L2Capture
         std::vector< boost::thread* > m_threads;
         std::atomic_bool m_terminate;
         boost::barrier* m_barrier;
-        ImageWriter* m_writer;
+        sepia::Writer* m_writer;
 
 };
 #endif // V4L2CAPTURE_H
