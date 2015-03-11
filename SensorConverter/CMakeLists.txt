@@ -1,8 +1,8 @@
-project(SensorRectifier)
+project(SensorConverter)
 aux_source_directory(src SRC_LIST)
 set( HEADER_FILES
-     ${CMAKE_SOURCE_DIR}/SensorRectifier/defs/rectification.h
-     ${CMAKE_SOURCE_DIR}/SensorRectifier/defs/processthread.h )
+     ${CMAKE_SOURCE_DIR}/SensorConverter/defs/rectification.h
+     ${CMAKE_SOURCE_DIR}/SensorConverter/defs/processthread.h )
 
 find_package( OpenCV REQUIRED )
 include_directories(defs)
