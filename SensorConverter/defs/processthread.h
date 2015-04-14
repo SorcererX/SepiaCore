@@ -15,7 +15,8 @@ class Rectification;
 class ProcessThread : public sepia::util::ThreadObject
 {
 public:
-    ProcessThread( sepia::Reader* input, sepia::Writer* output, Rectification* rectifier, boost::barrier *barrier, int id );
+    ProcessThread( sepia::Reader* input, sepia::Writer* output, boost::barrier *barrier, int id );
+    void setRectification( Rectification* a_rectifier );
     void start();
 
 protected:

@@ -39,14 +39,14 @@ int main( int argc, char** argv )
 {
     po::options_description desc;
 
+    std::string input_name;
     std::string output_name;
-    int cameras;
+    bool rectify;
 
     desc.add_options()
-            ( "v4l2", "Use V4L2" )
-            ( "ximea", "Use XIMEA" )
-            ( "cameras", po::value<int>(&cameras)->default_value(0), "cameras" )
-            ( "output_name",po::value<std::string>(&output_name)->default_value("XI_IMG"), "Output Group Name" );
+            ( "input_name",po::value<std::string>(&input_name)->default_value("XI_IMG"), "Input Group Name" )
+            ( "rectify", po::value<bool>(&rectify)->default_value(false), "Rectify" )
+            ( "output_name",po::value<std::string>(&output_name)->default_value("RGB_CONVERTED"), "Output Group Name" );
 
     po::variables_map vm;
 
@@ -68,18 +68,24 @@ int main( int argc, char** argv )
     }
 
     std::cout << "threads: " << cv::getNumThreads() << std::endl;
-    sepia::Reader input( "XI_IMG" );
-    sepia::Writer output( "RGB_RECTIFIED", input.getGroupHeader()->count, 1280, 1024, 24 );
+    sepia::Reader input( input_name );
+    sepia::Writer output( output_name, input.getGroupHeader()->count, 1280, 1024, 24 );
 
-    Rectification rec( "intrinsics.yml", "extrinsics.yml" );
-    rec.initialize( 1280, 1024 );
+    Rectification* rec = NULL;
+
+    if( rectify )
+    {
+        rec = new Rectification( "intrinsics.yml", "extrinsics.yml" );
+        rec->initialize( 1280, 1024 );
+    }
 
     std::vector< ProcessThread* > threads;
     boost::barrier bar( input.getGroupHeader()->count );
 
     for( unsigned int i = 0; i < input.getGroupHeader()->count; i++ )
     {
-        threads.push_back( new ProcessThread( &input, &output, &rec, &bar, i ) );
+        threads.push_back( new ProcessThread( &input, &output, &bar, i ) );
+        threads[i]->setRectification( rec );
     }
     for( unsigned int i = 0; i < threads.size(); i++ )
     {

@@ -28,11 +28,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sepia/reader.h>
 #include <sepia/writer.h>
 
-ProcessThread::ProcessThread( sepia::Reader* input, sepia::Writer* output, Rectification* rectifier, boost::barrier *barrier, int id )
+#define FOURCC(a,b,c,d) ( (uint32_t) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)) )
+
+ProcessThread::ProcessThread( sepia::Reader* input, sepia::Writer* output, boost::barrier *barrier, int id )
 {
     m_input = input;
     m_output = output;
-    m_rectifier = rectifier;
+    m_rectifier = NULL;
     m_barrier = barrier;
     m_id = id;
 }
@@ -42,40 +44,71 @@ void ProcessThread::start()
     m_thread = new std::thread( std::bind( &ProcessThread::own_thread, this ) );
 }
 
+void ProcessThread::setRectification( Rectification* a_rectifier )
+{
+    m_rectifier = a_rectifier;
+}
+
 void ProcessThread::own_thread()
 {
-    int format = CV_8UC1; // default
-    if( m_input->getHeader( m_id )->bpp == 8 )
+    enum class Format { UNKNOWN, RAW8, RAW16, MJPEG, YUYV, BGR8 };
+
+    Format format = Format::UNKNOWN;
+    int cv_format = CV_MAKETYPE( CV_8U, 1 );
+
+    sepia::Stream::image_header_t* hdr = m_input->getHeader( m_id );
+    switch( hdr->fourcc )
     {
-        format = CV_8UC1;
-    }
-    else if( m_input->getHeader( m_id )->bpp == 24 )
-    {
-        format = CV_8UC3;
+    case 0x00000000:
+        if( hdr->bpp == 8 )
+        {
+            format = Format::RAW8;
+            cv_format = CV_MAKETYPE( CV_8U, 1 );
+        }
+        else if( hdr->bpp == 16 )
+        {
+            format = Format::RAW16;
+            cv_format = CV_MAKETYPE( CV_16U, 1 );
+        }
+        break;
+    case FOURCC( 'M', 'J', 'P', 'G'):
+        format = Format::MJPEG;
+        cv_format = CV_MAKETYPE( CV_8U, 3 ); // format after conversion
+        break;
+    default:
+        break;
     }
 
-    cv::Mat input_frame( m_input->getHeader( m_id )->height, m_input->getHeader( m_id )->width, format, m_input->getAddress( m_id ) );
-    cv::Mat temp_frame( m_output->getHeader( m_id )->height, m_output->getHeader( m_id )->width, CV_8UC3 );
-    cv::Mat output_frame( m_output->getHeader( m_id )->height, m_output->getHeader( m_id )->width, CV_8UC3, m_output->getAddress( m_id ) );
+    cv::Mat input_frame( m_input->getHeader( m_id )->height, m_input->getHeader( m_id )->width, cv_format, m_input->getAddress( m_id ) );
+    cv::Mat converted_frame( m_output->getHeader( m_id )->height, m_output->getHeader( m_id )->width, CV_8UC3 );
+    cv::Mat rectified_frame( m_output->getHeader( m_id )->height, m_output->getHeader( m_id )->width, CV_8UC3, m_output->getAddress( m_id ) );
 
     while( !m_terminate )
     {
-        if( format == CV_8UC1 )
+        if( format == Format::RAW8 || format == Format::RAW16 )
         {
-            cv::demosaicing( input_frame, temp_frame, cv::COLOR_BayerBG2BGR_EA );
-            if( m_id == 1 )
+            cv::demosaicing( input_frame, converted_frame, cv::COLOR_BayerBG2BGR_EA );
+        }
+        else if( format == Format::MJPEG )
+        {
+            // perform JPEG decode here
+        }
+        else {
+
+        }
+
+        if( m_rectifier != NULL )
+        {
+            if( m_id == 0 )
             {
-                //temp_frame /= 0.9;
+                m_rectifier->remapLeft( &converted_frame, &rectified_frame );
+            }
+            else if( m_id == 1 )
+            {
+                m_rectifier->remapRight( &converted_frame, &rectified_frame );
             }
         }
-        if( m_id == 0 )
-        {
-            m_rectifier->remapLeft( &temp_frame, &output_frame );
-        }
-        else if( m_id == 1 )
-        {
-            m_rectifier->remapRight( &temp_frame, &output_frame );
-        }
+
         m_barrier->wait();
         if( m_id == 0 )
         {
@@ -84,6 +117,14 @@ void ProcessThread::own_thread()
         }
         m_barrier->wait();
         input_frame.data = reinterpret_cast< unsigned char* >( m_input->getAddress( m_id ) );
-        output_frame.data = reinterpret_cast< unsigned char* >( m_output->getAddress( m_id ) );
+
+        if( m_rectifier != NULL )
+        {
+            rectified_frame.data = reinterpret_cast< unsigned char* >( m_output->getAddress( m_id ) );
+        }
+        else
+        {
+            converted_frame.data = reinterpret_cast< unsigned char* >( m_output->getAddress( m_id ) );
+        }
     }
 }

@@ -269,7 +269,9 @@ void XimeaCapture::acquisition_thread( const int camera_no )
            hdr->frame_number = xi_image.nframe;
            hdr->tv_sec = xi_image.tsSec;
            hdr->tv_usec = xi_image.tsUSec;
-           hdr->fourcc = 1;
+           hdr->fourcc = 0x00000000; // RAW
+           hdr->bpp = 8;
+           hdr->channels = 1;
            hdr->size = xi_image.bp_size;
            hdr->gpi_level = xi_image.GPI_level;
            hdr->black_level = xi_image.black_level;

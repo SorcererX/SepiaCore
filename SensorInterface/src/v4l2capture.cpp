@@ -136,6 +136,8 @@ void V4L2Capture::acquisition_thread( const int camera_id )
            hdr->fourcc = input->getCurrentFormat().fmt.pix.pixelformat;
            hdr->width = input->getCurrentFormat().fmt.pix.width;
            hdr->height = input->getCurrentFormat().fmt.pix.height;
+           hdr->bpp = 8;
+           hdr->channels = 1;
            hdr->tv_sec = tv.tv_sec;
            hdr->tv_usec = tv.tv_usec;
 
