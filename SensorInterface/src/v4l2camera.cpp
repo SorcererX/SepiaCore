@@ -102,7 +102,14 @@ std::vector< v4l2_frmivalenum >& V4L2Camera::getFrameIntervals( u_int32_t format
 
 void V4L2Camera::setFormat( u_int32_t pixelformat, u_int32_t width, u_int32_t height )
 {
-    V4L2Interface::set_format( m_fd, pixelformat, width, height );
+    if( V4L2Interface::set_format( m_fd, pixelformat, width, height ) )
+    {
+        std::cout << "setting current format" << std::endl;
+        if( V4L2Interface::get_format( m_fd, m_completeFormat ) )
+        {
+            std::cout << m_completeFormat.fmt.pix.width << " " << m_completeFormat.fmt.pix.height << " " << m_completeFormat.fmt.pix.pixelformat << std::endl;
+        }
+    }
 }
 
 struct v4l2_format V4L2Camera::getCurrentFormat()

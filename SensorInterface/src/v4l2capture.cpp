@@ -29,7 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 V4L2Capture::V4L2Capture( const int cameras )
 {
-    m_writer = new sepia::Writer( "/V4L2_IMAGE", cameras, 1280, 1024, 32 ); // reserve for 4 channels.
+    m_terminate = 0;
+    m_writer = new sepia::Writer( "/V4L2_IMAGE", cameras, 1600, 1200, 32 ); // reserve for 4 channels.
     m_barrier = new boost::barrier( cameras );
 
     std::string name = "/dev/video";
@@ -44,6 +45,7 @@ V4L2Capture::V4L2Capture( const int cameras )
     for( int i = 0; i < cameras; i++ )
     {
         V4L2Camera* camera = m_cameras.at( i );
+        camera->open();
         camera->stopCapture();
         camera->setFormat( camera->getFormats().at( format ).pixelformat, frame_width, frame_height );
         camera->setPowerLineFrequencyTo50HZ();
@@ -146,15 +148,17 @@ void V4L2Capture::acquisition_thread( const int camera_id )
                std::cerr << "readyFrame failed." << std::endl;
                break;
            }
-
+           m_barrier->wait();
            if( camera_id == 0 )
            {
+               std::cout << "frame: " << frame_no << " size " << hdr->size << std::endl;
                m_writer->update();
            }
        }
        else
        {
            frame_no = 0;
+           m_barrier->wait();
            m_barrier->wait();
            usleep( 500000 ); // wait 500 ms before retrying.
        }

@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rectification.h"
 #include <sepia/reader.h>
 #include <sepia/writer.h>
+#include "grfmt_jpeg.h"
 
 #define FOURCC(a,b,c,d) ( (uint32_t) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)) )
 
@@ -80,8 +81,17 @@ void ProcessThread::own_thread()
     }
 
     cv::Mat input_frame( m_input->getHeader( m_id )->height, m_input->getHeader( m_id )->width, cv_format, m_input->getAddress( m_id ) );
+
     cv::Mat converted_frame( m_output->getHeader( m_id )->height, m_output->getHeader( m_id )->width, CV_8UC3 );
+
+    if( m_rectifier == NULL )
+    {
+        converted_frame.data = reinterpret_cast< unsigned char* >( m_output->getAddress( m_id ) );
+    }
+
     cv::Mat rectified_frame( m_output->getHeader( m_id )->height, m_output->getHeader( m_id )->width, CV_8UC3, m_output->getAddress( m_id ) );
+
+    JpegDecoder decoder;
 
     while( !m_terminate )
     {
@@ -92,6 +102,8 @@ void ProcessThread::own_thread()
         else if( format == Format::MJPEG )
         {
             // perform JPEG decode here
+            decoder.readHeader( reinterpret_cast< unsigned char* >( input_frame.data ), m_input->getHeader( m_id )->size );
+            decoder.readData( reinterpret_cast< unsigned char* >( converted_frame.data ), m_input->getHeader( m_id )->width * 3, true );
         }
         else {
 

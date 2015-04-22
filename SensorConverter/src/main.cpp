@@ -69,7 +69,8 @@ int main( int argc, char** argv )
 
     std::cout << "threads: " << cv::getNumThreads() << std::endl;
     sepia::Reader input( input_name );
-    sepia::Writer output( output_name, input.getGroupHeader()->count, 1280, 1024, 24 );
+    std::cout << "input: " << input.getGroupHeader()->count << std::endl;
+    sepia::Writer output( output_name, input.getGroupHeader()->count, 1600, 1200, 24 ); // TODO: FIX
 
     Rectification* rec = NULL;
 

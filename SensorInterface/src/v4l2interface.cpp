@@ -69,7 +69,7 @@ void stream_off( int fd )
 
     if( -1 == xioctl ( fd, VIDIOC_STREAMOFF, &type ) )
     {
-        std::cerr << "VIDIOC_STREAMON" << std::endl;
+        std::cerr << "VIDIOC_STREAMOFF" << std::endl;
         exit( EXIT_FAILURE );
     }
 }
@@ -275,6 +275,17 @@ bool set_format( int fd, u_int32_t pixelformat, u_int32_t width, u_int32_t heigh
     }
     return true;
 }
+
+bool get_format( int fd, struct v4l2_format &a_format )
+{
+    a_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if ( -1 == xioctl( fd, VIDIOC_G_FMT, &a_format ) )
+    {
+        return false;
+    }
+    return true;
+}
+
 
 bool request_buffers( int fd, int& count )
 {

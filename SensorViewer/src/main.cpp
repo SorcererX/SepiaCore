@@ -45,6 +45,11 @@ namespace po = boost::program_options;
 //unsigned int window_width = 2560, window_height = 1024;
 //unsigned int window_width = 1280, window_height=1024;
 
+void error_callback(int error, const char* description)
+{
+    fputs(description, stderr);
+}
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     switch( key )
@@ -119,6 +124,8 @@ void anaglyphic_stereo(cv::Mat left_input, cv::Mat right_input, cv::Mat output)
 
 int main(int argc, char** argv)
 {
+    glfwSetErrorCallback(error_callback);
+
     po::options_description desc;
 
     std::string input_name;
@@ -152,6 +159,7 @@ int main(int argc, char** argv)
 
     if( !glfwInit() )
     {
+        std::cout << "glfwInit failed." << std::endl;
         exit( -1 );
     }
 
@@ -175,6 +183,13 @@ int main(int argc, char** argv)
 
   std::vector< ProcessThread* > threads;
   boost::barrier bar( input.getGroupHeader()->count );
+
+  std::cout << "count: " << input.getGroupHeader()->count << std::endl;
+
+  if( input.getGroupHeader()->count == 1 )
+  {
+      Settings::show_mode = Settings::show::LEFT; // TODO: handle single window properly.
+  }
 
   for( unsigned int i = 0; i < input.getGroupHeader()->count; i++ )
   {

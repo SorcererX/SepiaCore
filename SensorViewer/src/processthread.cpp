@@ -153,8 +153,6 @@ void ProcessThread::own_thread()
             if( count == 100 )
             {
                 auto end = std::chrono::steady_clock::now();
-                std::cout << "black_level - 0: " << m_inputGroup->getHeader( 0 )->black_level
-                          << " 1: " << m_inputGroup->getHeader( 1 )->black_level;
                 auto elapsed = end-begin;
                 //std::cerr << "Time: " << elapsed.count() * 1000.0 / std::chrono::steady_clock::period().den << std::endl;
                 elapsed = end-begin;

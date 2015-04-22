@@ -126,7 +126,13 @@ int main( int argc, char *argv[] )
             std::cerr << "SUBSCRIPTION_ERROR:" << std::endl;
         }
     }
-    SensorInterface::joinAll();
+
+    if( capture )
+    {
+        capture->join();
+    }
+
+    std::cout << "NORMAL_EXIT" << std::endl;
     delete capture;
     return 0;
 }
