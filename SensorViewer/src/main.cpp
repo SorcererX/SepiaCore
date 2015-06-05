@@ -179,7 +179,7 @@ int main(int argc, char** argv)
                         input.getGroupHeader()->count,
                         input.getHeader( 0 )->width,
                         input.getHeader( 0 )->height,
-                        input.getHeader( 0 )->bpp );
+                        24 );
 
   std::vector< ProcessThread* > threads;
   boost::barrier bar( input.getGroupHeader()->count );

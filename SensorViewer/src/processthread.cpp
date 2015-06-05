@@ -109,6 +109,9 @@ void ProcessThread::own_thread()
     int count = 0;
     auto begin = std::chrono::steady_clock::now();
     m_barrier->wait();
+
+    std::cout << "input " << m_id << " bpp: " << m_inputGroup->getHeader( m_id )->bpp << std::endl;
+
     while( !m_terminate )
     {
         if( m_id == 0 )
@@ -124,6 +127,7 @@ void ProcessThread::own_thread()
         {
             output_format = CV_8UC1;
         }
+
         cv::Mat output_frame( m_outputGroup->getHeader( m_id )->height, m_outputGroup->getHeader( m_id )->width, output_format, m_outputGroup->getAddress( m_id ) );
 
         if( input_frame.channels() == 1 )
