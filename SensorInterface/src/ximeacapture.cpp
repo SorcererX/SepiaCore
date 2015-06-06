@@ -142,13 +142,13 @@ void XimeaCapture::receive( const XimeaControl* msg )
 {
    const int camera_no = msg->camera_no();
    int retval = 0;
-   int temp = 0;
+   int temp = 1;
    switch( msg->command() )
    {
       case XimeaControl_CommandType_OPEN:
          if( camera_no == 1 )
          {
-             temp = 1;
+             temp = 0;
          }
          retval = xiOpenDevice( temp, &m_handles.at( camera_no ) );
          if( m_handles.at( camera_no ) == NULL )
