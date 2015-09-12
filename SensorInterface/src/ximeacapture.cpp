@@ -109,10 +109,16 @@ XimeaCapture::XimeaCapture( const int devices )
     m_triggerBarrier = new boost::barrier( devices );
     xiSetParamInt( 0, XI_PRM_DEBUG_LEVEL, XI_DL_WARNING );
     xiSetParamInt( 0, XI_PRM_AUTO_BANDWIDTH_CALCULATION, XI_OFF );
+    sepia::comm::Observer< cuttlefish_msgs::XimeaControl >::initReceiver();
+    sepia::comm::Observer< cuttlefish_msgs::XimeaSet >::initReceiver();
+    sepia::comm::Observer< cuttlefish_msgs::XimeaGet >::initReceiver();
 }
 
 XimeaCapture::~XimeaCapture()
 {
+    sepia::comm::Observer< cuttlefish_msgs::XimeaControl >::destroyReceiver();
+    sepia::comm::Observer< cuttlefish_msgs::XimeaSet >::destroyReceiver();
+    sepia::comm::Observer< cuttlefish_msgs::XimeaGet >::destroyReceiver();
     stop();
     join();
 }
