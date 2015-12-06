@@ -52,6 +52,10 @@ void error_callback(int error, const char* description)
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    if( action != GLFW_PRESS )
+    {
+        return ;
+    }
     switch( key )
     {
     case GLFW_KEY_1:
@@ -89,6 +93,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         break;
     case GLFW_KEY_F:
         Settings::force_noscale = !Settings::force_noscale;
+        std::cout << "Scale: " << Settings::force_noscale << std::endl;
         break;
     case GLFW_KEY_Q:
         glfwSetWindowShouldClose(window, GL_TRUE);
