@@ -24,55 +24,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
-#include <boost/program_options.hpp>
+#include <sepia/util/progargs.h>
 #include <record.h>
 #include <playback.h>
+#include <unistd.h>
 
-namespace po = boost::program_options;
+using sepia::util::ProgArgs;
 
 int main( int argc, char** argv )
 {
-    po::options_description desc;
 
-    std::string group_name;
-    std::string filename;
-    double fps;
-    int timeout;
+    ProgArgs::init( argc, argv );
+    std::string input_name = "XI_IMG";
+    std::string filename = "output.list";
+    double fps = 15.0;
+    int timeout = 0;
 
-    desc.add_options()
-            ("record", "Record" )
-            ("playback", "Playback" )
-            ( "fps", po::value<double>(&fps)->default_value(15.0), "Frames per second" )
-            ( "timeout", po::value<int>(&timeout)->default_value(0), "Seconds to record" )
-            ( "real_fps", "Use actual recording fps" )
-            ( "filename", po::value<std::string>(&filename)->default_value( "output.list" ), "File Name" )
-            ( "loop", "Loop indefinitely" )
-            ( "group_name",po::value<std::string>(&group_name)->default_value("XI_IMG"), "Group Name" );
+    ProgArgs::addOptionDefaults( "record", "Record" );
+    ProgArgs::addOptionDefaults( "playback", "Playback" );
+    ProgArgs::addOptionDefaults( "fps", &fps, "Frames per second" );
+    ProgArgs::addOptionDefaults( "timeout", &timeout, "Seconds to record" );
+    ProgArgs::addOptionDefaults( "real_fps", "Use actual recording fps" );
+    ProgArgs::addOptionDefaults( "filename", &filename, "File Name" );
+    ProgArgs::addOptionDefaults( "loop", "Loop indefinitely" );
+    ProgArgs::addOptionDefaults( "input_name", &input_name, "Input Group Name" );
 
-    po::variables_map vm;
-
-    try
+    if(  (  ProgArgs::contains( "record") && ProgArgs::contains( "playback" ) )
+      || ( !ProgArgs::contains( "record" ) && !ProgArgs::contains( "playback" ) ) )
     {
-        po::store( po::parse_command_line( argc, argv, desc ), vm );
-        po::notify( vm );
-    }
-    catch( const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        std::cout << desc << std::endl;
+        ProgArgs::printHelp();
         return 1;
     }
 
-    if(  (  vm.count( "record") &&  vm.count( "playback" ) )
-      || ( !vm.count( "record") && !vm.count( "playback" ) ) )
+    if( ProgArgs::contains( "record" ) )
     {
-        std::cout << desc << std::endl;
-        return 1;
-    }
-
-    if( vm.count( "record" ) )
-    {
-        Record rec( group_name, filename );
+        Record rec( input_name, filename );
         rec.start();
         if( timeout != 0 )
         {
@@ -82,14 +68,14 @@ int main( int argc, char** argv )
         rec.join();
     }
 
-    if( vm.count( "playback" ) )
+    if( ProgArgs::contains( "playback" ) )
     {
-        Playback play( group_name, filename );
-        if( vm.count( "loop") )
+        Playback play( input_name, filename );
+        if( ProgArgs::contains( "loop") )
         {
             play.enableLoop( true );
         }
-        if( vm.count( "real_fps" ) )
+        if( ProgArgs::contains( "real_fps" ) )
         {
             play.useRealFps( true );
         }

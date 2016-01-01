@@ -22,5 +22,5 @@ add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADER_FILES} ${PROTO_SRCS} ${PROTO
 target_link_libraries( ${PROJECT_NAME} -L/usr/local/Lib -lSepiaStream )
 target_link_libraries( ${PROJECT_NAME} -L/opt/XIMEA/lib -lm3api )
 target_link_libraries( ${PROJECT_NAME} -L/usr/local/lib -lusb-1.0 )
-target_link_libraries( ${PROJECT_NAME} -lboost_system -lboost_program_options -lboost_thread -lv4l2 -lrt )
+target_link_libraries( ${PROJECT_NAME} -lboost_system -lboost_thread -lv4l2 -lrt )
 target_link_libraries( ${PROJECT_NAME} ${PROTOBUF_LIBRARIES} )

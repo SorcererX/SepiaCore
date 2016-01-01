@@ -28,16 +28,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>
 #include <iostream>
 #include <vector>
-#include <boost/program_options.hpp>
 #include <ximeacapture.h>
 #include <v4l2capture.h>
 #include <sensorinterface.h>
 #include <sepia/comm/globalreceiver.h>
 #include <sepia/comm/observer.h>
 #include <sepia/comm/scom.h>
+#include <sepia/util/progargs.h>
 
-namespace po = boost::program_options;
-
+using sepia::util::ProgArgs;
 
 void catch_int( int ){
     signal(SIGINT, catch_int);
@@ -54,32 +53,18 @@ void catch_broken_pipe( int ) {
 
 int main( int argc, char *argv[] )
 {
-    po::options_description desc;
+    std::string output_name = "XI_IMG";
+    int cameras = 0;
+    std::string interface = "XIMEA";
 
-    std::string output_name;
-    int cameras;
 
-    desc.add_options()
-            ( "v4l2", "Use V4L2" )
-            ( "ximea", "Use XIMEA" )
-            ( "cameras", po::value<int>(&cameras)->default_value(0), "cameras" )
-            ( "output_name",po::value<std::string>(&output_name)->default_value("XI_IMG"), "Output Group Name" );
+    ProgArgs::init( argc, argv );
 
-    po::variables_map vm;
+    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"XIMEA\"" );
+    ProgArgs::addOptionDefaults( "cameras", &cameras, "cameras" );
+    ProgArgs::addOptionDefaults( "output_name", &output_name, "Output Group Name" );
 
-    try
-    {
-        po::store( po::parse_command_line( argc, argv, desc ), vm );
-        po::notify( vm );
-    }
-    catch( const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        std::cout << desc << std::endl;
-        return 1;
-    }
-
-    if( vm.count( "output_name" ) )
+    if( ProgArgs::contains( "output_name" ) )
     {
         std::cout << "Using: " << output_name << std::endl;
     }
@@ -92,24 +77,24 @@ int main( int argc, char *argv[] )
 
     SensorInterface* capture = NULL;
 
-    int devices = 0;
-
-    devices += vm.count( "v4l2" );
-    devices += vm.count( "ximea" );
-
-    if( devices != 1 || cameras < 1 )
+    if( cameras < 1 )
     {
-        std::cout << desc << std::endl;
+        ProgArgs::printHelp();
         return 1;
     }
 
-    if( vm.count( "v4l2" ) )
+    if( interface == "V4L2" )
     {
         capture = new V4L2Capture( cameras );
     }
-    else if( vm.count( "ximea" ) )
+    else if( interface == "XIMEA" )
     {
         capture = new XimeaCapture( cameras );
+    }
+    else
+    {
+        ProgArgs::printHelp();
+        return 1;
     }
 
     if( capture )

@@ -29,40 +29,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <rectification.h>
 #include <processthread.h>
 #include <opencv2/opencv.hpp>
-#include <boost/program_options.hpp>
-
-namespace po = boost::program_options;
+#include <sepia/util/progargs.h>
 
 using namespace std;
+using sepia::util::ProgArgs;
+
 
 int main( int argc, char** argv )
 {
-    po::options_description desc;
+    std::string input_name = "XI_IMG";
+    std::string output_name = "RGB_CONVERTED";
+    bool rectify = false;
 
-    std::string input_name;
-    std::string output_name;
-    bool rectify;
+    ProgArgs::init( argc, argv );
 
-    desc.add_options()
-            ( "input_name",po::value<std::string>(&input_name)->default_value("XI_IMG"), "Input Group Name" )
-            ( "rectify", po::value<bool>(&rectify)->default_value(false), "Rectify" )
-            ( "output_name",po::value<std::string>(&output_name)->default_value("RGB_CONVERTED"), "Output Group Name" );
+    ProgArgs::addOptionDefaults( "input_name", &input_name, "Input Group Name" );
+    ProgArgs::addOptionDefaults( "rectify", &rectify, "Rectify" );
+    ProgArgs::addOptionDefaults( "output_name", &output_name, "Output Group Name" );
 
-    po::variables_map vm;
-
-    try
-    {
-        po::store( po::parse_command_line( argc, argv, desc ), vm );
-        po::notify( vm );
-    }
-    catch( const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        std::cout << desc << std::endl;
-        return 1;
-    }
-
-    if( vm.count( "output_name" ) )
+    if( ProgArgs::contains( "output_name" ) )
     {
         std::cout << "Using: " << output_name << std::endl;
     }

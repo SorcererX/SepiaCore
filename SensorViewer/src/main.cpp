@@ -34,13 +34,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <processthread.h>
 #include <settings.h>
-#include <boost/program_options.hpp>
+#include <sepia/util/progargs.h>
 
 #include <sepia/writer.h>
 #include <sepia/reader.h>
 
-namespace po = boost::program_options;
-
+using sepia::util::ProgArgs;
 //unsigned int window_width = 1920, window_height = 1024;
 //unsigned int window_width = 2560, window_height = 1024;
 //unsigned int window_width = 1280, window_height=1024;
@@ -98,9 +97,16 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
+static void refresh_callback( GLFWwindow* window )
+{
+    /* Swap front and back buffers */
+    glfwSwapBuffers(window);
+}
+
 static void focus_callback( GLFWwindow* window, int focused )
 {
-
+    /* Swap front and back buffers */
+    glfwSwapBuffers(window);
 }
 
 // this simply combines the left and right image into an anaglyphic stereo image.
@@ -126,33 +132,16 @@ int main(int argc, char** argv)
 {
     glfwSetErrorCallback(error_callback);
 
-    po::options_description desc;
+    std::string input_name = "XI_IMG";
 
-    std::string input_name;
+    ProgArgs::init( argc, argv );
 
-    desc.add_options()
-            ( "input_name",po::value<std::string>(&input_name)->default_value("XI_IMG"), "Input Group Name" );
+    ProgArgs::addOptionDefaults( "input_name", &input_name, "Input Group Name" );
 
-    po::variables_map vm;
-
-    try
-    {
-        po::store( po::parse_command_line( argc, argv, desc ), vm );
-        po::notify( vm );
-    }
-    catch( const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-        std::cout << desc << std::endl;
-        return 1;
-    }
-
-    if( vm.count( "input_name" ) )
+    if( ProgArgs::contains( "input_name" ) )
     {
         std::cout << "Using: " << input_name << std::endl;
     }
-
-
 
     int window_width = 1792, window_height = 768;
     GLFWwindow* window;
@@ -221,6 +210,7 @@ int main(int argc, char** argv)
 
   glfwSetKeyCallback( window, key_callback );
   glfwSetWindowFocusCallback( window, focus_callback );
+  glfwSetWindowRefreshCallback(window, refresh_callback );
 
   float scale = 1.0;
 
