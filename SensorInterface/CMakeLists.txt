@@ -6,7 +6,9 @@ set( HEADER_FILES
      ${CMAKE_SOURCE_DIR}/SensorInterface/defs/v4l2camera.h
      ${CMAKE_SOURCE_DIR}/SensorInterface/defs/v4l2capture.h
      ${CMAKE_SOURCE_DIR}/SensorInterface/defs/v4l2interface.h
-     ${CMAKE_SOURCE_DIR}/SensorInterface/defs/ximeacapture.h)
+     ${CMAKE_SOURCE_DIR}/SensorInterface/defs/ximeacapture.h
+     ${CMAKE_SOURCE_DIR}/SensorInterface/defs/leptoncapture.h
+     ${CMAKE_SOURCE_DIR}/SensorInterface/defs/leptoninterface.h)
 
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
