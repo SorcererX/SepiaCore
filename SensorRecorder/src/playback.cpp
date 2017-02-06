@@ -31,13 +31,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h>
+#include <cmath>
+#include <string.h>
 
-int64_t timevaldiff(struct timeval *starttime, struct timeval *finishtime)
+double timevaldiff( struct timeval* a, struct timeval* b)
 {
-  int64_t usec;
-  usec=(finishtime->tv_sec-starttime->tv_sec)*1000*1000;
-  usec+=(finishtime->tv_usec-starttime->tv_usec);
-  return usec;
+    double a_val = static_cast< double >( a->tv_sec * 1000000.0 + a->tv_usec );
+    double b_val = static_cast< double >( b->tv_sec * 1000000.0 + b->tv_usec );
+    return fabs( a_val - b_val );
 }
 
 Playback::Playback( const std::string& groupname, const std::string& file_list )
@@ -70,7 +71,7 @@ void Playback::start()
     m_thread = new std::thread( std::bind( &Playback::own_thread, this ) );
 }
 
-bool Playback::readImages( std::ifstream& input, sepia::Writer& output )
+bool Playback::readImages( std::ifstream& input, sepia::Writer*& output )
 {
     sepia::Stream::group_header_t group_header;
 
@@ -79,22 +80,28 @@ bool Playback::readImages( std::ifstream& input, sepia::Writer& output )
         return false;
     }
 
-    if( group_header.count != output.getGroupHeader()->count )
+    for( size_t i = 0; i < group_header.count; i++ )
     {
-        std::cerr << "Group size does not match." << std::endl;
-        return false;
-    }
+        sepia::Stream::image_header_t hdr;
 
-    for( size_t i = 0; i < output.getGroupHeader()->count; i++ )
-    {
-        if( !input.read( (char*) output.getHeader( i ), sizeof( sepia::Stream::image_header_t ) ) )
+        if( !input.read( (char*) &hdr, sizeof( sepia::Stream::image_header_t ) ) )
         {
             return false;
         }
+
+        if( output == NULL )
+        {
+            std::cout << "sepia::Writer params: ";
+            std::cout << "groupName: " << m_groupName << " count: " << group_header.count;
+            std::cout << " width: " << hdr.width << " height: " << hdr.height << " bpp: " << hdr.bpp << std::endl;
+            output = new sepia::Writer( m_groupName, group_header.count, hdr.width, hdr.height, hdr.bpp );
+        }
+        memcpy( (char*) output->getHeader( i ), &hdr, sizeof( sepia::Stream::image_header_t ) );
     }
-    for( size_t i = 0; i < output.getGroupHeader()->count; i++ )
+
+    for( size_t i = 0; i < output->getGroupHeader()->count; i++ )
     {
-        if( !input.read( (char*) output.getAddress( i ), output.getHeader( i )->size ) )
+        if( !input.read( (char*) output->getAddress( i ), output->getHeader( i )->size ) )
         {
             return false;
         }
@@ -106,7 +113,7 @@ bool Playback::readImages( std::ifstream& input, sepia::Writer& output )
 
 void Playback::own_thread()
 {
-    sepia::Writer output( m_groupName, 2, 1280, 1024, 8 ); // temporary, need to sort out what to do.
+    sepia::Writer* output = NULL;
 
     std::ifstream reclist;
 
@@ -166,10 +173,15 @@ void Playback::own_thread()
 
         while( !input.eof() && readImages( input, output ) )
         {
+            if( output == NULL )
+            {
+                std::cerr << "Unable to create SepiaStream writer" << std::endl;
+                break;
+            }
             gettimeofday( &real_clock, NULL );
             struct timeval stream_clock;
-            stream_clock.tv_sec = output.getHeader( 0 )->tv_sec;
-            stream_clock.tv_usec = output.getHeader( 0 )->tv_usec;
+            stream_clock.tv_sec = output->getHeader( 0 )->tv_sec;
+            stream_clock.tv_usec = output->getHeader( 0 )->tv_usec;
             if( diff.tv_sec == 0 && diff.tv_usec == 0 )
             {
                 diff.tv_sec = real_clock.tv_sec-stream_clock.tv_sec;
@@ -189,7 +201,7 @@ void Playback::own_thread()
                     usleep( 1000000 / m_fps );
                 }
             }
-            output.update();
+            output->update();
         }
         input.close();
     }

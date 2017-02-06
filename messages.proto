@@ -80,3 +80,10 @@ message InterfaceControl {
    required bool synchronize = 2;
 }
 
+message FC2SetExposure {
+   required int64 exposure = 1;
+}
+
+message FC2GetExposure {
+   required int64 exposure = 1;
+}

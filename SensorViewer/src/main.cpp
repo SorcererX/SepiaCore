@@ -166,7 +166,7 @@ int main(int argc, char** argv)
     }
 
   const std::string inputGroup = input_name;
-  const std::string outputGroup = "LOCAL_CONVERTED_RGB";
+  const std::string outputGroup = "LOCAL_CONVERTED_RGB" + std::to_string( getpid() );
 
   sepia::Reader input( inputGroup );
   sepia::Writer output( outputGroup,
@@ -309,8 +309,8 @@ int main(int argc, char** argv)
                                CV_8UC3,
                                processed.getAddress( 1 ) );
 
-          cv::Mat output_frame( 1024,
-                               1280,
+          cv::Mat output_frame( height,
+                               width,
                                CV_8UC3 );
           anaglyphic_stereo( left_frame, right_frame, output_frame );
           glDrawPixels( width, height, color_mode, GL_UNSIGNED_BYTE, output_frame.data );

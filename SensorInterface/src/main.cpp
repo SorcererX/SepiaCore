@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <ximeacapture.h>
 #include <v4l2capture.h>
+#include <leptoncapture.h>
+#include <fc2capture.h>
 #include <sensorinterface.h>
 #include <sepia/comm/globalreceiver.h>
 #include <sepia/comm/observer.h>
@@ -59,7 +61,7 @@ int main( int argc, char *argv[] )
 
     ProgArgs::init( argc, argv );
 
-    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"XIMEA\"" );
+    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"XIMEA\", \"LEPTON\", \"FC2\"" );
     ProgArgs::addOptionDefaults( "cameras", &cameras, "cameras" );
     ProgArgs::addOptionDefaults( "output_name", &output_name, "Output Group Name" );
 
@@ -90,6 +92,14 @@ int main( int argc, char *argv[] )
     {
         capture = new XimeaCapture( cameras );
     }
+    else if( interface == "LEPTON" )
+    {
+        capture = new LeptonCapture( "/dev/null" );
+    }
+    else if( interface == "FC2" )
+    {
+        capture = new FC2Capture( output_name, cameras );
+    }
     else
     {
         ProgArgs::printHelp();
@@ -100,7 +110,7 @@ int main( int argc, char *argv[] )
     {
         capture->start();
     }
-
+/*
     while( !SensorInterface::isAllTerminated() )
     {
         bool handled = sepia::comm::ObserverBase::threadReceiver();
@@ -110,7 +120,7 @@ int main( int argc, char *argv[] )
             std::cerr << "SUBSCRIPTION_ERROR:" << std::endl;
         }
     }
-
+*/
     if( capture )
     {
         capture->join();

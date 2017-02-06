@@ -14,7 +14,7 @@ public:
 
 protected:
     void own_thread();
-    bool readImages( std::ifstream& input, sepia::Writer& output );
+    bool readImages(std::ifstream& input, sepia::Writer*& output );
 
 private:
     std::string m_groupName;

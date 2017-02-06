@@ -162,6 +162,7 @@ void ProcessThread::own_thread()
                 elapsed = end-begin;
                 count = 0;
                 std::cerr << "Process Fps: " << 100 * std::chrono::steady_clock::period().den / (double) elapsed.count() << std::endl;
+                std::cerr << "Timestamp: " << m_inputGroup->getHeader( m_id )->tv_sec << "." << m_inputGroup->getHeader( m_id )->tv_usec << std::endl;
             }
 
             m_outputGroup->update();
