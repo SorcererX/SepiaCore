@@ -2,6 +2,7 @@
 #include "leptoninterface.h"
 
 #include <sepia/writer.h>
+#include <functional>
 
 LeptonCapture::LeptonCapture( const std::string& a_device ) : m_bits( 8 ),
                                                               m_speed( 16000000 ),

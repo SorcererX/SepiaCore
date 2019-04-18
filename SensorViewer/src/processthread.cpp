@@ -154,14 +154,14 @@ void ProcessThread::own_thread()
         m_barrier->wait();
         if( m_id == 0 )
         {
-            if( count == 100 )
+            if( count == 10 )
             {
                 auto end = std::chrono::steady_clock::now();
                 auto elapsed = end-begin;
                 //std::cerr << "Time: " << elapsed.count() * 1000.0 / std::chrono::steady_clock::period().den << std::endl;
                 elapsed = end-begin;
                 count = 0;
-                std::cerr << "Process Fps: " << 100 * std::chrono::steady_clock::period().den / (double) elapsed.count() << std::endl;
+                std::cerr << "Process Fps: " << 10 * std::chrono::steady_clock::period().den / (double) elapsed.count() << std::endl;
                 std::cerr << "Timestamp: " << m_inputGroup->getHeader( m_id )->tv_sec << "." << m_inputGroup->getHeader( m_id )->tv_usec << std::endl;
             }
 

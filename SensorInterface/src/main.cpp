@@ -23,6 +23,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <spinnakercapture.h>
 #include <xiApi.h>
 #include <signal.h>
 #include <iostream>
@@ -30,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <ximeacapture.h>
 #include <v4l2capture.h>
 #include <leptoncapture.h>
-#include <fc2capture.h>
+//#include <fc2capture.h>
 #include <sensorinterface.h>
 #include <sepia/comm/globalreceiver.h>
 #include <sepia/comm/observer.h>
@@ -61,7 +62,7 @@ int main( int argc, char *argv[] )
 
     ProgArgs::init( argc, argv );
 
-    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"XIMEA\", \"LEPTON\", \"FC2\"" );
+    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"XIMEA\", \"LEPTON\", \"FC2\", \"SPINNAKER\"" );
     ProgArgs::addOptionDefaults( "cameras", &cameras, "cameras" );
     ProgArgs::addOptionDefaults( "output_name", &output_name, "Output Group Name" );
 
@@ -69,9 +70,9 @@ int main( int argc, char *argv[] )
     {
         std::cout << "Using: " << output_name << std::endl;
     }
-    sepia::comm::init( "SensorInterface" );
-    sepia::comm::GlobalReceiver receiver;
-    receiver.start();
+    //sepia::comm::init( "SensorInterface" );
+    //sepia::comm::GlobalReceiver receiver;
+    //receiver.start();
 
     signal(SIGINT, catch_int);
     signal(SIGPIPE, catch_broken_pipe ); // SIG_IGN
@@ -96,9 +97,13 @@ int main( int argc, char *argv[] )
     {
         capture = new LeptonCapture( "/dev/null" );
     }
-    else if( interface == "FC2" )
+    //else if( interface == "FC2" )
+    //{
+    //    capture = new FC2Capture( output_name, cameras );
+    //}
+    else if( interface == "SPINNAKER" )
     {
-        capture = new FC2Capture( output_name, cameras );
+        capture = new SpinnakerCapture( output_name, cameras );
     }
     else
     {

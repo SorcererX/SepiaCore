@@ -13,6 +13,6 @@ PROTOBUF_GENERATE_CPP(PROTO_SRCS
 include_directories(defs)
 include_directories(/usr/local/include)
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${HEADER_FILES} ${PROTO_SRCS} ${PROTO_HDRS})
-target_link_libraries( ${PROJECT_NAME} -L/usr/local/Lib -lSepiaStream )
+target_link_libraries( ${PROJECT_NAME} -L/usr/local/lib -lSepiaStream )
 target_link_libraries( ${PROJECT_NAME} -lboost_system -lboost_program_options -lboost_thread -lrt )
 target_link_libraries( ${PROJECT_NAME} ${PROTOBUF_LIBRARIES} )

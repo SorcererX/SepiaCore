@@ -2,6 +2,7 @@
 #include <sepia/writer.h>
 #include <opencv2/opencv.hpp>
 #include <unistd.h>
+#include <functional>
 
 ImagePlayer::ImagePlayer( const std::string& a_outputGroupName ) : m_outputGroupName( a_outputGroupName )
                                                                  , m_loop( false )

@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <cmath>
 #include <string.h>
+#include <functional>
 
 double timevaldiff( struct timeval* a, struct timeval* b)
 {

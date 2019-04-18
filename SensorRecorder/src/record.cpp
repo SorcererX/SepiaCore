@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <thread>
 #include <sepia/reader.h>
 #include <sys/time.h>
+#include <functional>
 
 Record::Record( const std::string groupname, const std::string filename )
 {

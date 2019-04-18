@@ -148,7 +148,7 @@ int main(int argc, char** argv)
         std::cout << "Using: " << input_name << std::endl;
     }
 
-    int window_width = 1792, window_height = 768;
+    int window_width = 2448, window_height = 1024;
     GLFWwindow* window;
 
     if( !glfwInit() )

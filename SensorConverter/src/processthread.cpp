@@ -71,6 +71,11 @@ void ProcessThread::own_thread()
             format = Format::RAW16;
             cv_format = CV_MAKETYPE( CV_16U, 1 );
         }
+        else if( hdr->bpp == 24 )
+        {
+            format = Format::BGR8;
+            cv_format = CV_MAKETYPE( CV_8U, 3 );
+        }
         break;
     case FOURCC( 'M', 'J', 'P', 'G'):
         format = Format::MJPEG;
