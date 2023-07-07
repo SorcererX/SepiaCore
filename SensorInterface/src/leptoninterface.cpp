@@ -6,7 +6,7 @@
 
 #include <linux/types.h>
 #include <unistd.h>
-
+#include <cstdint>
 
 namespace LeptonInterface
 {
