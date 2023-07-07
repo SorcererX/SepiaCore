@@ -17,6 +17,9 @@ namespace
 }
 
 AravisStream::AravisStream( ArvCamera* a_camera, uint16_t a_height, uint16_t a_width, uint16_t a_bpp, uint16_t a_numberOfBuffers )
+  : m_height( a_height )
+  , m_width( a_width )
+  , m_bpp( a_bpp )
 {
     GError* error = nullptr;
     m_stream = arv_camera_create_stream( a_camera, nullptr, nullptr, &error );
@@ -25,7 +28,7 @@ AravisStream::AravisStream( ArvCamera* a_camera, uint16_t a_height, uint16_t a_w
     for( std::size_t i = 0; i < a_numberOfBuffers; i++ )
     {
         // ownership of buffer is handled by m_stream. The buffers will be free'd when m_stream is destroyed.
-        arv_stream_push_buffer( m_stream, arv_buffer_new( ( a_height * a_width * a_bpp ) / 8, nullptr ) );
+        arv_stream_push_buffer( m_stream, arv_buffer_new( ( m_height * m_width * m_bpp ) / 8, nullptr ) );
     }
 }
 
@@ -40,5 +43,5 @@ AravisStream::~AravisStream()
 
 std::unique_ptr< AravisImage > AravisStream::getImage()
 {
-    return std::make_unique< AravisImage >( m_stream, arv_stream_pop_buffer( m_stream ) );
+    return std::make_unique< AravisImage >( m_stream, arv_stream_pop_buffer( m_stream ), m_height, m_width, m_bpp );
 }

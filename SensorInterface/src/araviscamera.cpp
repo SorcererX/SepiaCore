@@ -138,7 +138,7 @@ std::unique_ptr< AravisStream > AravisCamera::getStream()
 {
     int64_t width = getInt( "Width" );
     int64_t height = getInt( "Height" );
-    return std::make_unique< AravisStream >( m_camera, width, height, 24, 128 );
+    return std::make_unique< AravisStream >( m_camera, width, height, 8, 128 );
 }
 
 std::vector< std::string > AravisCamera::getList()

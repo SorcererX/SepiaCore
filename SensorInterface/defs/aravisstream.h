@@ -16,6 +16,9 @@ public:
 
 private:
     ArvStream* m_stream{ nullptr };
+    uint16_t m_height;
+    uint16_t m_width;
+    uint16_t m_bpp;
 };
 
 #endif // ARAVISSTREAM_H

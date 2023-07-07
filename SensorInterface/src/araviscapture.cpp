@@ -52,10 +52,10 @@ void AravisCapture::acquisition_thread( std::size_t a_id, const std::string& a_d
 {
     AravisCamera camera( a_deviceString );
 
+    int64_t width = camera.getInt( "Width" );
+    int64_t height = camera.getInt( "Height" );
     if( a_id == 0 )
     {
-        int64_t width = camera.getInt( "Width" );
-        int64_t height = camera.getInt( "Height" );
         std::cout << "Using device: " << a_deviceString << " width: " << width << " height: " << height << std::endl;
         m_writer = new sepia::Writer( "ARAVIS", m_cameras, width, height, 8 ); // reserve for 4 channels.
     }

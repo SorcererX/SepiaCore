@@ -1,18 +1,13 @@
 #include <aravisimage.h>
 #include <arv.h>
+#include <iostream>
 
-AravisImage::AravisImage( ArvStream* a_stream, ArvBuffer* a_buffer ) : m_buffer( a_buffer )
-                                                                     , m_stream( a_stream )
+AravisImage::AravisImage( ArvStream* a_stream, ArvBuffer* a_buffer, uint16_t a_height, uint16_t a_width, uint16_t a_bpp ) : m_buffer( a_buffer )
+                                                                                                                          , m_stream( a_stream )
+                                                                                                                          , m_height( a_height )
+                                                                                                                          , m_width(  a_width  )
+                                                                                                                          , m_bpp( a_bpp )
 {
-    if( m_buffer )
-    {
-        m_data = reinterpret_cast< const unsigned char* >( arv_buffer_get_data( m_buffer, &m_size ) );
-    }
-    else
-    {
-        m_data = nullptr;
-        m_size = 0;
-    }
 }
 
 AravisImage::~AravisImage()
@@ -30,12 +25,27 @@ bool AravisImage::isValid()
 
 const unsigned char* AravisImage::getData() const
 {
-    return m_data;
+    return reinterpret_cast< const unsigned char* >( arv_buffer_get_data( m_buffer, nullptr ) );
 }
 
 std::size_t AravisImage::getSize() const
 {
-    return m_size;
+    return getHeight() * getWidth() * getBitsPerPixel() / 8;
+}
+
+std::size_t AravisImage::getWidth() const
+{
+    return m_width;
+}
+
+std::size_t AravisImage::getHeight() const
+{
+    return m_height;
+}
+
+std::size_t AravisImage::getBitsPerPixel() const
+{
+    return m_bpp;
 }
 
 uint64_t AravisImage::getTimestamp() const
