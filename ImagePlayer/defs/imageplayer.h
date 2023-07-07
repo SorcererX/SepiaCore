@@ -17,7 +17,6 @@ public:
     ~ImagePlayer();
     void setInputFile( const std::string& a_inputFile );
     void enableLoop( bool a_enable );
-    void start();
 
 protected:
     void own_thread();

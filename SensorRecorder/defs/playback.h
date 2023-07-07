@@ -10,7 +10,6 @@ public:
     void useRealFps( bool enable );
     void setFps( double fps );
     void enableLoop( bool enable );
-    void start();
 
 protected:
     void own_thread();

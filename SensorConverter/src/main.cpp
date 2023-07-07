@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <processthread.h>
 #include <opencv2/opencv.hpp>
 #include <sepia/util/progargs.h>
+#include <sepia/util/threadbarrier.h>
 
 using namespace std;
 using sepia::util::ProgArgs;
@@ -66,7 +67,7 @@ int main( int argc, char** argv )
     }
 
     std::vector< ProcessThread* > threads;
-    boost::barrier bar( input.getGroupHeader()->count );
+    sepia::util::ThreadBarrier bar( input.getGroupHeader()->count );
 
     for( unsigned int i = 0; i < input.getGroupHeader()->count; i++ )
     {

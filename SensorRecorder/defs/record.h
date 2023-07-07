@@ -11,7 +11,6 @@ class Record : public sepia::util::ThreadObject
 {
 public:
     Record( const std::string groupname, const std::string filename );
-    void start();
 
 protected:
     void own_thread();

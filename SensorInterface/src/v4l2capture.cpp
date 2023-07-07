@@ -26,12 +26,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "v4l2capture.h"
 #include "v4l2camera.h"
 #include <sepia/writer.h>
+#include <sepia/util/threadbarrier.h>
 
 V4L2Capture::V4L2Capture( const int cameras )
 {
     m_terminate = 0;
     m_writer = new sepia::Writer( "/V4L2_IMAGE", cameras, 1600, 1200, 32 ); // reserve for 4 channels.
-    m_barrier = new boost::barrier( cameras );
+    m_barrier = new sepia::util::ThreadBarrier( cameras );
 
     std::string name = "/dev/video";
     for( int i = 0; i < cameras; i++ )
@@ -72,7 +73,7 @@ void V4L2Capture::start()
 {
     for( unsigned int i = 0; i < m_cameras.size(); i++ )
     {
-       m_threads.push_back( new boost::thread( boost::bind( &V4L2Capture::acquisition_thread, this, i ) ) );
+       m_threads.push_back( new std::thread( std::bind( &V4L2Capture::acquisition_thread, this, i ) ) );
     }
 }
 

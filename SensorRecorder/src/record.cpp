@@ -40,12 +40,6 @@ Record::Record( const std::string groupname, const std::string filename )
     m_fileList = filename;
 }
 
-
-void Record::start()
-{
-    m_thread = new std::thread( std::bind( &Record::own_thread, this ) );
-}
-
 void Record::own_thread()
 {
     std::ofstream list;

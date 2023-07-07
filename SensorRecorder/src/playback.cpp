@@ -66,12 +66,6 @@ void Playback::enableLoop( bool enable )
     m_loop = enable;
 }
 
-
-void Playback::start()
-{
-    m_thread = new std::thread( std::bind( &Playback::own_thread, this ) );
-}
-
 bool Playback::readImages( std::ifstream& input, sepia::Writer*& output )
 {
     sepia::Stream::group_header_t group_header;

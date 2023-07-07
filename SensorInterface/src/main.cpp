@@ -23,16 +23,15 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <spinnakercapture.h>
-#include <xiApi.h>
 #include <signal.h>
 #include <iostream>
+#include <string>
 #include <vector>
-#include <ximeacapture.h>
-#include <v4l2capture.h>
-#include <leptoncapture.h>
-//#include <fc2capture.h>
-#include <sensorinterface.h>
+#include "araviscapture.h"
+#include "v4l2capture.h"
+#include "leptoncapture.h"
+#include "sensorinterface.h"
+#include <sepia/util/progargs.h>
 #include <sepia/comm/globalreceiver.h>
 #include <sepia/comm/observer.h>
 #include <sepia/comm/scom.h>
@@ -55,14 +54,14 @@ void catch_broken_pipe( int ) {
 
 int main( int argc, char *argv[] )
 {
-    std::string output_name = "XI_IMG";
+    std::string output_name = "ARAVIS_IMG";
     int cameras = 0;
-    std::string interface = "XIMEA";
+    std::string interface = "ARAVIS";
 
 
     ProgArgs::init( argc, argv );
 
-    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"XIMEA\", \"LEPTON\", \"FC2\", \"SPINNAKER\"" );
+    ProgArgs::addOptionDefaults( "interface", &interface, "Interface to use, supported: \"V4L2\", \"LEPTON\",\"ARAVIS\"" );
     ProgArgs::addOptionDefaults( "cameras", &cameras, "cameras" );
     ProgArgs::addOptionDefaults( "output_name", &output_name, "Output Group Name" );
 
@@ -77,7 +76,7 @@ int main( int argc, char *argv[] )
     signal(SIGINT, catch_int);
     signal(SIGPIPE, catch_broken_pipe ); // SIG_IGN
 
-    SensorInterface* capture = NULL;
+    SensorInterface* capture = nullptr;
 
     if( cameras < 1 )
     {
@@ -89,21 +88,13 @@ int main( int argc, char *argv[] )
     {
         capture = new V4L2Capture( cameras );
     }
-    else if( interface == "XIMEA" )
+    else if( interface == "ARAVIS" )
     {
-        capture = new XimeaCapture( cameras );
+        capture = new AravisCapture( cameras );
     }
     else if( interface == "LEPTON" )
     {
         capture = new LeptonCapture( "/dev/null" );
-    }
-    //else if( interface == "FC2" )
-    //{
-    //    capture = new FC2Capture( output_name, cameras );
-    //}
-    else if( interface == "SPINNAKER" )
-    {
-        capture = new SpinnakerCapture( output_name, cameras );
     }
     else
     {

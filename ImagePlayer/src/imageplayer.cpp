@@ -25,11 +25,6 @@ void ImagePlayer::enableLoop( bool a_enable )
     m_loop = a_enable;
 }
 
-void ImagePlayer::start()
-{
-    m_thread = new std::thread( std::bind( &ImagePlayer::own_thread, this ) );
-}
-
 void ImagePlayer::own_thread()
 {
     stream( 1.0 );

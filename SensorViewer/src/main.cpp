@@ -176,7 +176,7 @@ int main(int argc, char** argv)
                         24 );
 
   std::vector< ProcessThread* > threads;
-  boost::barrier bar( input.getGroupHeader()->count );
+  sepia::util::ThreadBarrier bar( input.getGroupHeader()->count );
 
   std::cout << "count: " << input.getGroupHeader()->count << std::endl;
 

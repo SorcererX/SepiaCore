@@ -3,30 +3,32 @@
 #include <thread>
 #include <sepia/util/threadobject.h>
 #include <atomic>
-#include <boost/thread/barrier.hpp>
 
 namespace sepia
 {
-class Reader;
-class Writer;
+    class Reader;
+    class Writer;
+    namespace util
+    {
+        class ThreadBarrier;
+    }
 }
 class Rectification;
 
 class ProcessThread : public sepia::util::ThreadObject
 {
 public:
-    ProcessThread( sepia::Reader* input, sepia::Writer* output, boost::barrier *barrier, int id );
+    ProcessThread( sepia::Reader* a_input, sepia::Writer* a_output, sepia::util::ThreadBarrier* a_barrier, int a_id );
     void setRectification( Rectification* a_rectifier );
-    void start();
 
 protected:
-    void own_thread();
+    void own_thread() override;
 
 private:
     sepia::Reader* m_input;
     sepia::Writer* m_output;
     Rectification* m_rectifier;
-    boost::barrier* m_barrier;
+    sepia::util::ThreadBarrier* m_barrier;
     int m_id;
 };
 

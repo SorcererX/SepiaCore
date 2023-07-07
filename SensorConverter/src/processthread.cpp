@@ -27,22 +27,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rectification.h"
 #include <sepia/reader.h>
 #include <sepia/writer.h>
+#include <sepia/util/threadbarrier.h>
 #include "grfmt_jpeg.h"
 
 #define FOURCC(a,b,c,d) ( (uint32_t) (((d)<<24) | ((c)<<16) | ((b)<<8) | (a)) )
 
-ProcessThread::ProcessThread( sepia::Reader* input, sepia::Writer* output, boost::barrier *barrier, int id )
+ProcessThread::ProcessThread( sepia::Reader* a_input, sepia::Writer* a_output, sepia::util::ThreadBarrier* a_barrier, int a_id )
 {
-    m_input = input;
-    m_output = output;
-    m_rectifier = NULL;
-    m_barrier = barrier;
-    m_id = id;
-}
-
-void ProcessThread::start()
-{
-    m_thread = new std::thread( std::bind( &ProcessThread::own_thread, this ) );
+    m_input = a_input;
+    m_output = a_output;
+    m_rectifier = nullptr;
+    m_barrier = a_barrier;
+    m_id = a_id;
 }
 
 void ProcessThread::setRectification( Rectification* a_rectifier )

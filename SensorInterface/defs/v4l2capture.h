@@ -4,18 +4,19 @@
 #include <sepia/comm/observer.h>
 #include <vector>
 #include <atomic>
+#include <thread>
 #include <sensorinterface.h>
-#include <boost/thread/mutex.hpp>
 
-namespace sepia {
+namespace sepia
+{
     class Writer;
+
+    namespace util
+    {
+        class ThreadBarrier;
+    }
 }
 class V4L2Camera;
-
-namespace boost {
-    class thread;
-    class barrier;
-}
 
 class V4L2Capture
       : public SensorInterface
@@ -37,9 +38,9 @@ class V4L2Capture
     private:
         std::vector< V4L2Camera* > m_cameras;
         std::vector< bool > m_acquisition;
-        std::vector< boost::thread* > m_threads;
+        std::vector< std::thread* > m_threads;
         std::atomic_bool m_terminate;
-        boost::barrier* m_barrier;
+        sepia::util::ThreadBarrier* m_barrier;
         sepia::Writer* m_writer;
 
 };

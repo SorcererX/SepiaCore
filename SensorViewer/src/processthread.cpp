@@ -26,11 +26,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "processthread.h"
 #include <chrono>
 #include <ratio>
-#include <boost/thread.hpp>
 #include <opencv2/opencv.hpp>
 #include <settings.h>
 #include <sepia/writer.h>
 #include <sepia/reader.h>
+#include <sepia/util/threadbarrier.h>
 
 namespace
 {
@@ -75,17 +75,12 @@ void adjustWb( cv::Mat* input, double Kr, double Kg, double Kb )
 }
 }
 
-ProcessThread::ProcessThread( sepia::Reader* inputGroup, sepia::Writer* outputGroup, boost::barrier *barrier, int id )
+ProcessThread::ProcessThread( sepia::Reader* a_inputGroup, sepia::Writer* a_outputGroup, sepia::util::ThreadBarrier* a_barrier, int a_id )
 {
-    m_inputGroup = inputGroup;
-    m_outputGroup = outputGroup;
-    m_barrier = barrier;
-    m_id = id;
-}
-
-void ProcessThread::start()
-{
-    m_thread = new std::thread( std::bind( &ProcessThread::own_thread, this ) );
+    m_inputGroup = a_inputGroup;
+    m_outputGroup = a_outputGroup;
+    m_barrier = a_barrier;
+    m_id = a_id;
 }
 
 void ProcessThread::own_thread()
