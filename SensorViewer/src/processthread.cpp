@@ -130,7 +130,14 @@ void ProcessThread::own_thread()
             //adjustWb( input_frame, input_image->info.Kr, input_image->info.Kg, input_image->info.Kb );
             if( Settings::use_raw )
             {
-                memcpy( output_frame.data, input_frame.data, m_outputGroup->getHeader( m_id )->size );
+                if( m_inputGroup->getHeader( m_id )->size <= m_outputGroup->getHeader( m_id )->size )
+                {
+                    memcpy( output_frame.data, input_frame.data, m_inputGroup->getHeader( m_id )->size );
+                }
+                else
+                {
+                    std::cerr << "Output: " << m_outputGroup->getHeader( m_id )->size << " is smaller than Input: " << m_inputGroup->getHeader( m_id )->size << std::endl;
+                }
             }
             else
             {
@@ -156,8 +163,8 @@ void ProcessThread::own_thread()
                 //std::cerr << "Time: " << elapsed.count() * 1000.0 / std::chrono::steady_clock::period().den << std::endl;
                 elapsed = end-begin;
                 count = 0;
-                std::cerr << "Process Fps: " << 10 * std::chrono::steady_clock::period().den / (double) elapsed.count() << std::endl;
-                std::cerr << "Timestamp: " << m_inputGroup->getHeader( m_id )->tv_sec << "." << m_inputGroup->getHeader( m_id )->tv_usec << std::endl;
+                std::cerr << "Process Fps: " << 10 * std::chrono::steady_clock::period().den / (double) elapsed.count();
+                std::cerr << " Timestamp: " << m_inputGroup->getHeader( m_id )->tv_sec << "." << m_inputGroup->getHeader( m_id )->tv_usec << std::endl;
             }
 
             m_outputGroup->update();

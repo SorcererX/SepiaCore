@@ -13,7 +13,6 @@ PROTOBUF_GENERATE_CPP(PROTO_SRCS
                       ${CMAKE_SOURCE_DIR}/messages.proto)
 
 include_directories(defs)
-include_directories(/usr/include)
 include_directories(/usr/local/include)
 
 
