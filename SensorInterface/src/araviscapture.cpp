@@ -75,20 +75,22 @@ void AravisCapture::acquisition_thread( std::size_t a_id, const std::string& a_d
         }
 
         std::memcpy( m_writer->getAddress( a_id ), image->getData(), image->getSize() );
+        m_writer->getHeader( a_id )->tv_sec = image->getTimestamp() / 1000000000; // nanoseconds -> seconds
+        m_writer->getHeader( a_id )->tv_usec = ( image->getTimestamp() % 1000000000 ) / 1000; // nanoseconds -> microseconds
+
+        m_barrier->wait();
 
         if( a_id == 0 )
         {
             m_writer->update();
-        }
+            counter++;
+            std::cout << "." << std::flush;
 
-        counter++;
-        std::cout << "." << std::flush;
-
-        if( counter % 100 == 0 )
-        {
-            std::cout << " " << counter << std::endl;
-        }
-
+            if( counter % 100 == 0 )
+            {
+               std::cout << " " << counter << std::endl;
+            }
+	}
     }
     camera.stopAcquisition();
     delete m_writer;
